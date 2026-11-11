@@ -134,10 +134,10 @@ export class Pet {
     this.pending = this.pending.then(async () => {
       if (state === 'speaking') {
         await this.request('/work-status', 'DELETE');
-        const lock = await this.request('/lock?pet=' + id, 'POST', { ttl: 3000 });
+        const lock = await this.request('/lock?pet=' + id + '&surface=desktop', 'POST', { ttl: 3000 });
         if (!lock?.ok) return;
         try {
-          await this.request('/broadcast?pet=' + id + '&lock=' + encodeURIComponent(lock.lockId), 'POST',
+          await this.request('/broadcast?pet=' + id + '&surface=desktop&lock=' + encodeURIComponent(lock.lockId), 'POST',
             { text: [...text].slice(0, 260).join(''), duration: 8500, anim: true });
         } finally {
           await this.request('/lock/release?pet=' + id, 'POST', { lockId: lock.lockId });

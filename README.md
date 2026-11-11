@@ -25,6 +25,6 @@ npm start
 - **图片** 网页支持 PNG、JPEG、GIF 和 WebP，默认 DeepSeek Flash 可读图。把希望大肥鱼能发出的已有图片放在 `data/reply-images`，例如仓库的 `assets/desktop/DSniang1.png`。
 - **设备** V1 和 V2 固件同仓库提供，支持 45° 直视屏或棱镜。用 `npm run firmware -- <版本> data/wifi.local.json` 生成联网配置，按教程用 PlatformIO 烧录。棱镜校准同时作用于角色、字幕和状态栏。
 
-备份或迁移时先停止程序，再复制项目的整个 `data` 目录。SQLite 保存共同历史和媒体附件，`dsh-home` 保存模型上下文，`persona.txt` 是大肥鱼的人设。编辑人设后重启即可。Wi-Fi 和电脑配对令牌保存在本机生成的固件头文件。详见[素材说明](assets/NOTICES.md)。
+备份时先停止程序，再复制项目的整个 `data` 目录。恢复时放回原项目目录。SQLite 保存共同历史和媒体附件，`dsh-home` 保存模型上下文，`persona.txt` 是大肥鱼的人设。编辑人设后重启即可。Wi-Fi 和电脑配对令牌保存在本机生成的固件头文件。详见[素材说明](assets/NOTICES.md)。
 
 运行 `npm test` 验证聊天路由、存储、媒体与硬件协议。真实 QQ 扫码、云服务密钥、桌面交互、棱镜和按键语音需要在目标机器及设备验收。
