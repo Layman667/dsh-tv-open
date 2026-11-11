@@ -1,0 +1,8 @@
+{
+  "deepseek": { "apiKey": "", "model": "deepseek-flash" },
+  "qq": { "enabled": false, "url": "ws://127.0.0.1:3001", "token": "", "owner": "", "bot": "" },
+  "web": { "host": "127.0.0.1", "port": 18443, "password": "", "cert": "", "key": "" },
+  "voice": { "enabled": false, "asrApiKey": "", "ttsApiKey": "", "speaker": "zh_female_vv_uranus_bigtts" },
+  "device": { "enabled": false, "host": "127.0.0.1", "port": 18765, "token": "" },
+  "pet": { "enabled": true, "port": 18444 }
+}

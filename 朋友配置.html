@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大肥鱼 · 朋友配置</title>
+<style>
+:root{font-family:"DM Sans","PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:#173752;background:#eaf1f8;--line:#d7e3ee;--accent:#235f83;--muted:#47637b}
+*{box-sizing:border-box}body{margin:0}main{width:min(880px,calc(100% - 28px));margin:44px auto 70px}h1{font-size:clamp(30px,6vw,54px);letter-spacing:-.045em;margin:0}header p{color:var(--muted);margin:10px 0 24px}a{color:var(--accent)}[hidden]{display:none!important}
+.settings{display:grid;grid-template-columns:1fr 1.5fr;gap:12px;margin:0 0 23px;padding:16px;background:#dceaf6;border-radius:16px}
+label{display:grid;gap:6px;font-size:13px;color:var(--muted)}select{min-width:0;width:100%;padding:9px;border:1px solid #b5c8da;border-radius:8px;background:white;color:#173752;font:inherit}
+article{padding:18px 20px;margin:0 0 12px;background:#fff;border:1px solid var(--line);border-radius:16px}h2{font-size:18px;margin:0}
+.top{display:flex;justify-content:space-between;gap:8px;align-items:center}.num{color:var(--accent);font-variant-numeric:tabular-nums;display:inline-block;margin-right:9px;font-size:14px}button{border:0;background:var(--accent);color:white;font:inherit;white-space:nowrap;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px}
+pre{background:#f2f6fa;border-radius:11px;margin:12px 0;padding:12px;white-space:pre-wrap;overflow-wrap:anywhere;color:#2b4860;font-family:inherit;font-size:14px;line-height:1.55}article p{margin:8px 0 0;font-size:14px;line-height:1.55}.done{color:#286147}
+footer{font-size:13px;color:var(--muted);margin-top:20px}.status{position:fixed;bottom:12px;right:14px;background:#173752;color:white;border-radius:9px;padding:9px 12px;font-size:13px}
+@media(max-width:490px){main{margin-top:24px}.settings{grid-template-columns:1fr}article{padding:15px}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>大肥鱼 · 朋友配置</h1><p>选择朋友电脑的系统，按顺序复制到那台电脑的 DSH Agent。需要本人操作时，先做完再继续。</p></header>
+<div class="settings">
+  <label>朋友电脑的系统<select id="platform"><option value="win">Windows</option><option value="mac">macOS</option></select></label>
+  <label>已装好的设备<select id="variant">
+    <option value="none">暂不接硬件</option>
+    <option value="direct-v1">无棱镜 · 无语音</option>
+    <option value="direct-v2">无棱镜 · 有语音</option>
+    <option value="prism-v1">有棱镜 · 无语音</option>
+    <option value="prism-v2">有棱镜 · 有语音</option>
+  </select></label>
+</div>
+<div id="steps"></div>
+<footer><a href="https://github.com/Layman667/dsh-tv-open">公开仓库</a> · <a href="https://napneko.github.io/guide/boot/Shell.html">NapCat 安装</a> · <a href="https://console.volcengine.com/speech/new">豆包语音控制台</a> · <a href="https://support.apple.com/zh-cn/102390">iPhone 信任证书</a></footer>
+</main>
+<div class="status" id="status" role="status" hidden></div>
+<script>
+const platform = document.getElementById('platform');
+const variant = document.getElementById('variant');
+const status = document.getElementById('status');
+let noticeTimer;
+
+function render() {
+  const win = platform.value === 'win';
+  const project = win ? 'D:\\dsh-tv' : '~/dsh-tv';
+  const launcher = win ? 'start-windows.cmd' : 'start-macos.command';
+  const v = variant.value;
+  const v2 = v.endsWith('v2');
+  const prism = v.startsWith('prism');
+  const source = v2 ? 'esp32-v2' : 'esp32-v1';
+  const steps = [
+    {
+      title: '安装并显示桌宠',
+      user: '准备自己的 DeepSeek API Key。Agent 请求时直接把密钥发给远程电脑上的 Agent。',
+      prompt: `请在这台 ${win ? 'Windows' : 'macOS'} 电脑上配置大肥鱼。项目目录是 ${project}，仓库是 https://github.com/Layman667/dsh-tv-open.git。请自己检查环境、安装 Git 和 Node.js 24.9+，拉取仓库，执行 npm ci、npm --prefix desktop ci、npm run init。已有目录先检查来源和本地数据。${win ? '若没有 D:，告诉我如何准备 D 盘，再继续。' : ''} 我给你 DeepSeek 密钥后，写入 data/local.json 的 deepseek.apiKey。保留默认 deepseek-flash，按我提供的设定填写 data/persona.txt。运行 npm run doctor -- --live，再用 ${launcher} 启动。等大肥鱼出现在系统桌面，最小化 DSH 窗口后检查仍然显示，点击和拖动各试一次。`,
+      done: '桌面能看见大肥鱼，点击和拖动有反应，DeepSeek 测试回复成功。'
+    },
+    {
+      title: '登录 QQ，先完成私聊',
+      user: '准备日常 QQ 和一个机器人 QQ。打开 Agent 提供的登录页面，用机器人 QQ 扫码，并处理 QQ 的设备验证。',
+      prompt: `在 ${project} 配置 NapCat QQ。按 https://napneko.github.io/guide/boot/Shell.html 的 ${win ? 'Windows 一键包' : 'macOS NapCat-Mac-Installer，匹配 Intel 或 Apple Silicon 和 QQ 构建'} 安装。请准备并打开登录界面，我来扫码。然后在 NapCat WebUI 启用正向 WebSocket，绑定 127.0.0.1:3001、设访问令牌，消息格式选数组。把我给的日常 QQ 填 qq.owner、扫码的 QQ 填 qq.bot，在 data/local.json 填 qq.url、qq.token，并设 qq.enabled=true。重启，核对 NapCat 实际登录账号。让我从日常 QQ 给机器人发「记住我的测试暗号是蓝鲸」，验收真实 QQ 回复和桌宠气泡。`,
+      done: '机器人 QQ 回复了测试消息，桌宠出现同一条回复。'
+    },
+    {
+      title: '打开局域网网页，验收文字和图片',
+      user: '手机和朋友电脑连同一个家庭网络。按 Agent 发来的地址和访问码打开网页。',
+      prompt: `在 ${project} 开通家庭局域网网页。用 npm run doctor 找电脑的实际 IPv4，安装 mkcert，设 CAROOT 为本项目 data/tls/ca 的绝对路径。运行 mkcert -install，再为该 IPv4 生成 data/tls/chat.pem 和 data/tls/chat-key.pem（使用 -cert-file、-key-file 参数）。在 data/local.json 设置 web.host、web.cert、web.key，保留端口 18443 和生成的访问码。${win ? '若防火墙拦截，允许专用网络的本地子网访问 TCP 18443。' : '如 macOS 提示接收传入连接，告诉我确认。'} 重启后给我完整 https:// 地址、web.password 和手机要安装的根证书公开文件。把 assets/desktop/DSniang1.png 复制到 data/reply-images/大肥鱼.png。在手机上问「我在 QQ 里说的暗号是什么」，然后发一张图让它描述，再请它回一张已有的大肥鱼图片。`,
+      done: '网页说出蓝鲸，能识别上传的图，也能收到已有图片。'
+    },
+    {
+      title: '配置豆包，验收网页录音',
+      user: '在豆包语音控制台开通流式语音识别 2.0 和语音合成 2.0，创建 API Key，选一个 2.0 音色。手机首次打开网页时允许麦克风。',
+      prompt: `在 ${project} 的 data/local.json 配置豆包 ASR/TTS。写入我发的 voice.asrApiKey、voice.ttsApiKey、voice.speaker，voice.enabled 改为 true，重启。若用的是同一个 API Key，两项填同一个。请确认电脑的网页地址是 HTTPS，指导我在手机上信任根证书并授权麦克风。我会点录音、说一句「暗号是什么」、点结束再发送；请验收识别文字、同一 DSH 会话的回复和可播放的合成音频。`,
+      done: '网页显示语音转写和 DeepSeek 回复，点播放能听到豆包音频。'
+    },
+    {
+      title: '重启后检查历史',
+      prompt: `在 ${project} 停止再启动程序。打开网页核对刚才的 QQ、网页文字、图片、录音和语音回复都在。再通过 QQ 询问暗号，核对 DSH 沿用同一会话。告诉我平时启动的入口 ${launcher}、网页登录地址，以及项目 data 的备份位置。`,
+      done: '原历史和附件可用，重启后仍能继续同一段对话。'
+    }
+  ];
+  if (v !== 'none') steps.push({
+    title: '接入已装好的硬件',
+    user: '拿一根能传数据的 USB 线把 ESP32 插上。把朋友家 2.4 GHz Wi-Fi 的名称和密码发给 Agent。',
+    prompt: `在 ${project} 接入已组装的${prism ? '有棱镜' : '无棱镜 45° 直视屏'}${v2 ? '有语音' : '无语音'}版本。启用 device.enabled，device.host 填电脑家庭网的 IPv4，保留 18765 与已有 device.token。${win ? '防火墙仅为专用网络的本地子网开放 TCP 18765。' : '允许 Node 接收本地网络连接。'} 用我给的 Wi-Fi 生成 data/wifi.local.json，再运行 npm run firmware -- ${v} data/wifi.local.json。安装 PlatformIO，识别 USB 串口和板子标识，进入 ${source} 用 pio run -e esp32-s3-devkitc-1 -t upload --upload-port 对应串口；N8R8 改用 esp32-s3-n8r8。${prism ? '透过棱镜检查字幕和角色方向。若不正，调整 wifi.local.json 的 rotation（0–3）、mirror（x/y/none），重新生成烧录。' : '检查屏幕朝向；必要时改 rotation 后重烧。'} 重启电脑端，验证 PC LINK、短字幕和桌宠点击动作同步。${v2 ? '长按按钮录音，松开后核对识别、同一 DSH 会话回复和扬声器播放。' : '从 QQ 或网页发消息，验收短字幕和动作。'} 最后拔掉设备，实测桌宠、QQ 和网页仍可用，再插回观察自动重连。`,
+    done: '设备显示正确，重新插上能连回电脑。' + (v2 ? '按键语音验收通过。' : '')
+  });
+
+  const nodes = steps.map((step, index) => {
+    const card = document.createElement('article');
+    const top = document.createElement('div');
+    top.className = 'top';
+    const title = document.createElement('h2');
+    const number = document.createElement('span');
+    number.className = 'num';
+    number.textContent = String(index + 1).padStart(2, '0');
+    title.append(number, step.title);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = '复制给 Agent';
+    const pre = document.createElement('pre');
+    pre.textContent = step.prompt;
+    button.onclick = () => copy(step.prompt, pre);
+    top.append(title, button);
+    card.append(top, pre);
+    if (step.user) {
+      const user = document.createElement('p');
+      user.textContent = '你来做 · ' + step.user;
+      card.append(user);
+    }
+    const done = document.createElement('p');
+    done.className = 'done';
+    done.textContent = '完成标志 · ' + step.done;
+    card.append(done);
+    return card;
+  });
+  document.getElementById('steps').replaceChildren(...nodes);
+
+  const help = document.createElement('article');
+  const title = document.createElement('h2');
+  title.textContent = '手机怎么信任证书';
+  const detail = document.createElement('p');
+  detail.textContent = '用电脑传 mkcert 生成的根证书公开文件 rootCA.pem，必要时把后缀改成 .crt。iPhone 安装描述文件后，到「设置 → 通用 → 关于本机 → 证书信任设置」开启完全信任。Android 在「设置 → 安全 → 加密与凭据 → 安装证书 → CA 证书」导入，各品牌菜单可能略不同。重新打开 HTTPS 聊天页，再授权麦克风。';
+  help.append(title, detail);
+  document.getElementById('steps').append(help);
+}
+
+async function copy(text, pre) {
+  let message = '已复制，切到朋友电脑粘贴';
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const range = document.createRange();
+    range.selectNodeContents(pre);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    if (!document.execCommand('copy')) message = '话术已选中，请按 Ctrl+C 或 Command+C';
+  }
+  status.textContent = message;
+  status.hidden = false;
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => { status.hidden = true; }, 2600);
+}
+
+platform.onchange = render;
+variant.onchange = render;
+render();
+</script>
+</body>
+</html>

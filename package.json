@@ -1,0 +1,21 @@
+{
+  "name": "dsh-tv-open",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.9.0"
+  },
+  "scripts": {
+    "start": "node app/main.mjs",
+    "init": "node app/setup.mjs init",
+    "doctor": "node app/setup.mjs doctor",
+    "firmware": "node app/setup.mjs firmware",
+    "test": "node --test test/*.test.mjs pc-bridge/test/*.test.mjs"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-sdk-client": "0.2.2-rc.1",
+    "ws": "8.22.2"
+  }
+}

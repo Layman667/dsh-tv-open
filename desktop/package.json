@@ -1,0 +1,6 @@
+{
+  "name": "dsh-tv-open-desktop",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {"dsh-pet": "0.4.7"}
+}
